@@ -1,7 +1,9 @@
 #include <stdio.h>
-#include "wifi_station.h"
 #include "lwip/err.h"
 #include "nvs_flash.h"
+
+#include "wifi_station.h"
+#include "watering.h"
 
 /* The examples use WiFi configuration that you can set via project configuration menu
    If you'd rather not, just change the below entries to strings with
@@ -22,7 +24,7 @@ void nvs_init() {
 void app_main(void) {
   nvs_init();
   if(wifi_init_sta(EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS, EXAMPLE_ESP_MAXIMUM_RETRY) == ESP_OK) {
-    
+
   }
   else {
     // start AP and allow for wifi scan
