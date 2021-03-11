@@ -1,3 +1,3 @@
-idf_component_register(SRCS "esp.c" "wifi_station.c" "watering.c" "api_server.c"
-                    "api_controller.c" "api_auth.c" "cookie_helper.c"
+idf_component_register(SRCS "esp.c" "wifi_station.c" "watering.c" "api/api_server.c"
+                    "api/api_controller.c" "api/api_auth.c" "api/cookie_helper.c"
                     INCLUDE_DIRS ".")
