@@ -5,6 +5,8 @@
 #include <esp_event.h>
 #include <esp_log.h>
 
+#include "api_controller.h"
+
 static const char *TAG = "api server";
 
 static httpd_handle_t server = NULL;
@@ -21,11 +23,10 @@ static httpd_handle_t start_webserver() {
   // Start the httpd server
   ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
   if (httpd_start(&server, &config) == ESP_OK) {
-      // Set URI handlers
       ESP_LOGI(TAG, "Registering URI handlers");
-      //httpd_register_uri_handler(server, &hello);
-      //httpd_register_uri_handler(server, &echo);
-      //httpd_register_uri_handler(server, &ctrl);
+
+      // Set URI handlers
+      api_controller_register_uri_handlers(&server);
       return server;
   }
 
