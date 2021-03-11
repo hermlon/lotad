@@ -3,9 +3,15 @@
 #include <esp_log.h>
 #include <sys/param.h>
 
+#include "api_auth.h"
+
 static const char *TAG = "api controller";
 
 static esp_err_t password_post_handler(httpd_req_t* req) {
+  if(!authenticated(req)) {
+    return ESP_OK;
+  }
+
   char buf[100];
     int ret, remaining = req->content_len;
 
