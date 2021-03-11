@@ -30,3 +30,13 @@
 ### POST /active
 
 - data: active
+
+### POST /auth
+
+- data: password
+
+### POST /password
+
+- store new password hash in nvs
+
+- data: password
