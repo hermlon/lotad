@@ -12,12 +12,14 @@ TEST_CASE("Test cache creation and free", "[session cache]") {
 TEST_CASE("Test new session", "[session cache]") {
   int memory = xPortGetFreeHeapSize();
   struct cache* cache = create_cache(10, 3);
-  char* session_id = new_session(cache);
-  printf("%s\n", session_id);
+
   for(int i = 0; i < 500; i ++) {
     new_session(cache);
   }
-  print_cache(cache);
+  char* session_id = new_session(cache);
+  //print_cache(cache);
+  //printf("%s\n", session_id);
+  TEST_ASSERT(contains_session(cache, session_id));
   free_cache(cache);
   TEST_ASSERT_EQUAL_INT(xPortGetFreeHeapSize(), memory);
 }

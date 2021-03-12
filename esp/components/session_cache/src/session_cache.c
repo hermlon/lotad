@@ -4,8 +4,6 @@
 #include <string.h>
 #include "esp_system.h"
 
-#define SESSION_ID_LENGTH 12
-
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /* blocks have to be less than 64 */
@@ -61,6 +59,16 @@ char* new_session(struct cache* cache) {
   /* store new session id in cache */
   strlcpy(cache->data[block+blockline], session_id, SESSION_ID_LENGTH);
   return cache->data[block+blockline];
+}
+
+bool contains_session(struct cache* cache, char session_id[SESSION_ID_LENGTH]) {
+  int block = (session_id[0] % cache->blocks) * cache->blocksize;
+  for(int i = 0; i < cache->blocksize; i ++) {
+    if(strncmp(session_id, cache->data[block+i], SESSION_ID_LENGTH) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void print_cache(struct cache* cache) {
