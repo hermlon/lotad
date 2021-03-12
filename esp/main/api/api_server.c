@@ -13,6 +13,7 @@ static httpd_handle_t server = NULL;
 
 static void stop_webserver(httpd_handle_t server) {
   httpd_stop(server);
+  api_controller_deinit();
 }
 
 static httpd_handle_t start_webserver() {
@@ -26,7 +27,7 @@ static httpd_handle_t start_webserver() {
       ESP_LOGI(TAG, "Registering URI handlers");
 
       // Set URI handlers
-      api_controller_register_uri_handlers(&server);
+      api_controller_init(&server);
       return server;
   }
 

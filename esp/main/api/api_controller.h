@@ -3,6 +3,8 @@
 
 #include <esp_http_server.h>
 
-void api_controller_register_uri_handlers(httpd_handle_t* server);
+void api_controller_init(httpd_handle_t* server);
+
+void api_controller_deinit();
 
 #endif
