@@ -6,20 +6,35 @@
 #include <esp_log.h>
 
 #include "api_controller.h"
+#include "session_cache.h"
 
 static const char *TAG = "api server";
+
+#define SESSION_BLOCKS 10
+#define SESSION_BLOCKSIZE 2
 
 static httpd_handle_t server = NULL;
 
 static void stop_webserver(httpd_handle_t server) {
   httpd_stop(server);
-  api_controller_deinit();
+}
+
+static void free_api_server_context(void* ctx) {
+  ESP_LOGI(TAG, "Freeing api server ctx");
+  free_cache(((api_server_context_t*) ctx)->session_cache);
+  free(ctx);
 }
 
 static httpd_handle_t start_webserver() {
   httpd_handle_t server = NULL;
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.lru_purge_enable = true;
+
+  /* api server context */
+  api_server_context_t* api_context = calloc(1, sizeof(api_server_context_t));
+  api_context->session_cache = create_cache(SESSION_BLOCKS, SESSION_BLOCKSIZE);
+  config.global_user_ctx = api_context;
+  config.global_user_ctx_free_fn = &free_api_server_context;
 
   // Start the httpd server
   ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);

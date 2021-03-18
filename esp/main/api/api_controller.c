@@ -4,16 +4,12 @@
 #include <sys/param.h>
 
 #include "api_auth.h"
-#include "session_cache.h"
+#include "api_server.h"
 
 static const char *TAG = "api controller";
 
-#define SESSION_BLOCKS 10
-#define SESSION_BLOCKSIZE 2
-static struct cache* session_cache;
-
 static bool auth(httpd_req_t* req) {
-  if(!authenticated(session_cache, req)) {
+  if(!authenticated(((api_server_context_t*) req->user_ctx)->session_cache, req)) {
     httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Invalid or no session cookie.");
     return false;
   }
@@ -21,7 +17,7 @@ static bool auth(httpd_req_t* req) {
 }
 
 static esp_err_t password_post_handler(httpd_req_t* req) {
-  if(!auth(req)) return ESP_OK;
+  if(!auth(req)) return ESP_FAIL;
 
   char buf[100];
     int ret, remaining = req->content_len;
@@ -52,20 +48,13 @@ static esp_err_t password_post_handler(httpd_req_t* req) {
     return ESP_OK;
 }
 
-static const httpd_uri_t password_post = {
-  .uri = "/password",
-  .method = HTTP_POST,
-  .handler = password_post_handler,
-  .user_ctx = NULL
-};
-
-
 void api_controller_init(httpd_handle_t* server) {
+  /* URI handlers */
+  httpd_uri_t password_post = {
+    .uri = "/password",
+    .method = HTTP_POST,
+    .handler = password_post_handler,
+    .user_ctx = httpd_get_global_user_ctx(*server)
+  };
   httpd_register_uri_handler(*server, &password_post);
-
-  session_cache = create_cache(SESSION_BLOCKS, SESSION_BLOCKSIZE);
-}
-
-void api_controller_deinit() {
-  free_cache(session_cache);
 }
