@@ -1,6 +1,7 @@
 #include "api_auth.h"
 
 #include <esp_log.h>
+#include "mbedtls/md.h"
 
 #include "cookie_helper.h"
 
@@ -27,4 +28,22 @@ bool authenticated(struct cache* session_cache, httpd_req_t* req) {
   }
 
   return false;
+}
+
+static void password_hash(char* input, unsigned char result[33]) {
+  mbedtls_md_context_t ctx;
+  mbedtls_md_init(&ctx);
+  mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(MBEDTLS_MD_SHA256), 0);
+  mbedtls_md_starts(&ctx);
+  mbedtls_md_update(&ctx, (const unsigned char*) input, strlen(input));
+  mbedtls_md_finish(&ctx, result);
+  mbedtls_md_free(&ctx);
+  result[32] = '\0';
+}
+
+bool password_check(char* password, unsigned char* real_pw_hash) {
+  unsigned char pw_hash[33];
+  password_hash(password, pw_hash);
+
+  return strncmp(pw_hash, real_pw_hash, 32) == 0;
 }

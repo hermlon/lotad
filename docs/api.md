@@ -39,4 +39,10 @@
 
 - store new password hash in nvs
 
-- data: password
+- data:
+```
+{
+  old_password: "",
+  new_password: ""
+}
+```
