@@ -6,6 +6,4 @@
 
 bool authenticated(struct cache* session_cache, httpd_req_t* req);
 
-bool password_check(char* password, unsigned char* real_pw_hash);
-
 #endif

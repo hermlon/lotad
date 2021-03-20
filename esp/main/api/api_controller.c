@@ -6,6 +6,7 @@
 
 #include "api_auth.h"
 #include "api_server.h"
+#include "models/password_model.h"
 
 static const char *TAG = "api controller";
 
@@ -50,7 +51,7 @@ static esp_err_t password_post_handler(httpd_req_t* req) {
     if(password_check(old_password->valuestring)) {
       cJSON* new_password = cJSON_GetObjectItemCaseSensitive(data, "new_password");
       if(cJSON_IsString(new_password) && new_password->valuestring != NULL) {
-        //password_set(new_password->valuestring);
+        password_set(new_password->valuestring);
         httpd_resp_sendstr(req, "Successfully set new password");
       }
       else {
