@@ -36,11 +36,43 @@ static cJSON* parse_post_data(httpd_req_t* req) {
     cur_len += received;
   }
   buf[total_len] = '\0';
-  return cJSON_Parse(buf);
+  cJSON* data_parsed = cJSON_Parse(buf);
+  if(data_parsed == NULL) {
+    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed parsing json");
+  }
+  return data_parsed;
+}
+
+static esp_err_t auth_post_handler(httpd_req_t* req) {
+  cJSON* data = parse_post_data(req);
+  if(data == NULL) return ESP_FAIL;
+
+  esp_err_t result = ESP_FAIL;
+  cJSON* password = cJSON_GetObjectItemCaseSensitive(data, "password");
+  if(cJSON_IsString(password) && password->valuestring != NULL) {
+    if(password_check(password->valuestring)) {
+      char* session_id = new_session(((api_server_context_t*) req->user_ctx)->session_cache);
+
+      /* "session_id" has 11 characters without null terminator */
+      char prefix[11+SESSION_ID_LENGTH] = "session_id=";
+      httpd_resp_set_hdr(req, "Set-Cookie", strcat(prefix, session_id));
+      httpd_resp_sendstr(req, "authorized");
+      result = ESP_OK;
+    }
+    else {
+      httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Wrong password.");
+    }
+  }
+  else {
+    httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "No password.");
+  }
+
+  cJSON_Delete(data);
+  return result;
 }
 
 static esp_err_t password_post_handler(httpd_req_t* req) {
-  //if(!auth(req)) return ESP_FAIL;
+  if(!auth(req)) return ESP_FAIL;
 
   cJSON* data = parse_post_data(req);
   if(data == NULL) return ESP_FAIL;
@@ -82,4 +114,12 @@ void api_controller_init(httpd_handle_t* server) {
     .user_ctx = httpd_get_global_user_ctx(*server)
   };
   httpd_register_uri_handler(*server, &password_post);
+
+  httpd_uri_t auth_post = {
+    .uri = "/auth",
+    .method = HTTP_POST,
+    .handler = auth_post_handler,
+    .user_ctx = httpd_get_global_user_ctx(*server)
+  };
+  httpd_register_uri_handler(*server, &auth_post);
 }
