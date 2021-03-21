@@ -7,6 +7,7 @@
 #include "api_auth.h"
 #include "api_server.h"
 #include "models/password_model.h"
+#include "water_control.h"
 
 static const char *TAG = "api controller";
 
@@ -41,6 +42,34 @@ static cJSON* parse_post_data(httpd_req_t* req) {
     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "failed parsing json");
   }
   return data_parsed;
+}
+
+static esp_err_t active_get_handler(httpd_req_t* req) {
+  cJSON* response = cJSON_CreateObject();
+  cJSON* active = cJSON_CreateBool(water_ctl_get_active());
+  cJSON_AddItemToObject(response, "active", active);
+
+  httpd_resp_sendstr(req, cJSON_Print(response));
+  cJSON_Delete(response);
+  return ESP_OK;
+}
+
+static esp_err_t active_post_handler(httpd_req_t* req) {
+  cJSON* data = parse_post_data(req);
+  if(data == NULL) return ESP_FAIL;
+
+  esp_err_t result = ESP_FAIL;
+  cJSON* active = cJSON_GetObjectItemCaseSensitive(data, "active");
+  if(cJSON_IsBool(active)) {
+    water_ctl_set_active((bool) active->valueint);
+    result = ESP_OK;
+    httpd_resp_sendstr(req, "success");
+  }
+  else {
+    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "malformed param active.");
+  }
+
+  return result;
 }
 
 static esp_err_t auth_post_handler(httpd_req_t* req) {
@@ -122,4 +151,20 @@ void api_controller_init(httpd_handle_t* server) {
     .user_ctx = httpd_get_global_user_ctx(*server)
   };
   httpd_register_uri_handler(*server, &auth_post);
+
+  httpd_uri_t active_get = {
+    .uri = "/active",
+    .method = HTTP_GET,
+    .handler = active_get_handler,
+    .user_ctx = httpd_get_global_user_ctx(*server)
+  };
+  httpd_register_uri_handler(*server, &active_get);
+
+  httpd_uri_t active_post = {
+    .uri = "/active",
+    .method = HTTP_POST,
+    .handler = active_post_handler,
+    .user_ctx = httpd_get_global_user_ctx(*server)
+  };
+  httpd_register_uri_handler(*server, &active_post);
 }

@@ -5,4 +5,6 @@
 
 #define STORE_PASSWORD_HASH "password_hash"
 
+#define STORE_ENABLED "enabled"
+
 #endif

@@ -4,7 +4,7 @@
 
 #include "cookie_helper.h"
 
-static const char *TAG = "api auth";
+static const char* TAG = "api auth";
 
 bool authenticated(struct cache* session_cache, httpd_req_t* req) {
   /* get session_id from reqest header */
