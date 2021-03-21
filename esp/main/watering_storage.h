@@ -6,5 +6,8 @@
 #define STORE_PASSWORD_HASH "password_hash"
 
 #define STORE_ENABLED "enabled"
+#define STORE_CAPACITY "capacity"
+#define STORE_SAVEZONE "savezone"
+#define STORE_THROUGHPUT "throughput"
 
 #endif

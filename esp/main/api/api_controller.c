@@ -9,9 +9,14 @@
 #include "models/password_model.h"
 #include "water_control.h"
 
+#define DEBUG_BYPASS_AUTH CONFIG_BYPASS_AUTH
+
 static const char *TAG = "api controller";
 
 static bool auth(httpd_req_t* req) {
+  if(DEBUG_BYPASS_AUTH) {
+    return true;
+  }
   if(!authenticated(((api_server_context_t*) req->user_ctx)->session_cache, req)) {
     httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Invalid or no session cookie.");
     return false;
@@ -44,8 +49,22 @@ static cJSON* parse_post_data(httpd_req_t* req) {
   return data_parsed;
 }
 
+static esp_err_t config_get_handler(httpd_req_t* req) {
+  cJSON* response = cJSON_CreateObject();
+
+  struct water_config conf = water_ctl_get_config();
+  cJSON_AddItemToObject(response, "capacity", cJSON_CreateNumber(conf.capacity));
+  cJSON_AddItemToObject(response, "savezone", cJSON_CreateNumber(conf.savezone));
+  cJSON_AddItemToObject(response, "throughput", cJSON_CreateNumber(conf.throughput));
+
+  httpd_resp_sendstr(req, cJSON_Print(response));
+  cJSON_Delete(response);
+  return ESP_OK;
+}
+
 static esp_err_t active_get_handler(httpd_req_t* req) {
   cJSON* response = cJSON_CreateObject();
+
   cJSON* active = cJSON_CreateBool(water_ctl_get_active());
   cJSON_AddItemToObject(response, "active", active);
 
@@ -167,4 +186,12 @@ void api_controller_init(httpd_handle_t* server) {
     .user_ctx = httpd_get_global_user_ctx(*server)
   };
   httpd_register_uri_handler(*server, &active_post);
+
+  httpd_uri_t config_get = {
+    .uri = "/configure",
+    .method = HTTP_GET,
+    .handler = config_get_handler,
+    .user_ctx = httpd_get_global_user_ctx(*server)
+  };
+  httpd_register_uri_handler(*server, &config_get);
 }

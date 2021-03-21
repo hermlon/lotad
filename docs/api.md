@@ -46,3 +46,34 @@
   new_password: ""
 }
 ```
+
+### POST /configure
+
+- data:
+```
+{
+  capacity: 34,
+  savezone: 20,
+  throughput: 12
+}
+```
+
+### POST /timers
+
+- data:
+```
+{
+  timers: [
+    {
+      time: 324,
+      offset: 2532,
+      amount: 12
+    },
+    {
+      time: 314,
+      offset: 3214,
+      amount: 2
+    }
+  ]
+}
+```
