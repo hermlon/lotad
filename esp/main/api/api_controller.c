@@ -62,6 +62,36 @@ static esp_err_t config_get_handler(httpd_req_t* req) {
   return ESP_OK;
 }
 
+static esp_err_t config_post_handler(httpd_req_t* req) {
+  cJSON* data = parse_post_data(req);
+  if(data == NULL) return ESP_FAIL;
+
+  esp_err_t result = ESP_FAIL;
+  cJSON* capacity = cJSON_GetObjectItemCaseSensitive(data, "capacity");
+  cJSON* savezone = cJSON_GetObjectItemCaseSensitive(data, "savezone");
+  cJSON* throughput = cJSON_GetObjectItemCaseSensitive(data, "throughput");
+  if(cJSON_IsNumber(capacity) && cJSON_IsNumber(savezone) && cJSON_IsNumber(throughput)) {
+    if(savezone->valueint <= capacity->valueint) {
+      struct water_config config = {
+        .capacity = capacity->valueint,
+        .savezone = savezone->valueint,
+        .throughput = throughput->valueint
+      };
+      water_ctl_set_config(config);
+      result = ESP_OK;
+      httpd_resp_sendstr(req, "success");
+    }
+    else {
+      httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "savezone has to be smaller than capacity.");
+    }
+  }
+  else {
+    httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "malformed param active.");
+  }
+
+  return result;
+}
+
 static esp_err_t active_get_handler(httpd_req_t* req) {
   cJSON* response = cJSON_CreateObject();
 
@@ -194,4 +224,12 @@ void api_controller_init(httpd_handle_t* server) {
     .user_ctx = httpd_get_global_user_ctx(*server)
   };
   httpd_register_uri_handler(*server, &config_get);
+
+  httpd_uri_t config_post = {
+    .uri = "/configure",
+    .method = HTTP_POST,
+    .handler = config_post_handler,
+    .user_ctx = httpd_get_global_user_ctx(*server)
+  };
+  httpd_register_uri_handler(*server, &config_post);
 }
