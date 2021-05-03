@@ -134,7 +134,7 @@ static esp_err_t auth_post_handler(httpd_req_t* req) {
       /* "session_id" has 11 characters without null terminator */
       char prefix[11+SESSION_ID_LENGTH] = "session_id=";
       httpd_resp_set_hdr(req, "Set-Cookie", strcat(prefix, session_id));
-      httpd_resp_sendstr(req, "authorized");
+      httpd_resp_sendstr(req, "authenticated");
       result = ESP_OK;
     }
     else {
