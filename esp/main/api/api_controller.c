@@ -50,6 +50,8 @@ static cJSON* parse_post_data(httpd_req_t* req) {
 }
 
 static esp_err_t config_get_handler(httpd_req_t* req) {
+  if(!auth(req)) return ESP_FAIL;
+
   cJSON* response = cJSON_CreateObject();
 
   struct water_config conf = water_ctl_get_config();
@@ -63,6 +65,8 @@ static esp_err_t config_get_handler(httpd_req_t* req) {
 }
 
 static esp_err_t config_post_handler(httpd_req_t* req) {
+  if(!auth(req)) return ESP_FAIL;
+
   cJSON* data = parse_post_data(req);
   if(data == NULL) return ESP_FAIL;
 
@@ -93,6 +97,8 @@ static esp_err_t config_post_handler(httpd_req_t* req) {
 }
 
 static esp_err_t active_get_handler(httpd_req_t* req) {
+  if(!auth(req)) return ESP_FAIL;
+
   cJSON* response = cJSON_CreateObject();
 
   cJSON* active = cJSON_CreateBool(water_ctl_get_active());
@@ -104,6 +110,8 @@ static esp_err_t active_get_handler(httpd_req_t* req) {
 }
 
 static esp_err_t active_post_handler(httpd_req_t* req) {
+  if(!auth(req)) return ESP_FAIL;
+
   cJSON* data = parse_post_data(req);
   if(data == NULL) return ESP_FAIL;
 
