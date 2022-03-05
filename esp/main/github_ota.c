@@ -38,9 +38,11 @@ static bool get_latest_release() {
     char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
 
     esp_http_client_config_t config = {
-            .url = "https://api.github.com/repos/hermlon/lotad/releases/latest",
+            .host = "api.github.com",
+            .path = "/repos/hermlon/lotad/releases/latest",
             .event_handler = http_event_handler,
             .user_data = local_response_buffer,
+            .transport_type = HTTP_TRANSPORT_OVER_SSL,
             .cert_pem = github_root_cert_start
     };
 
@@ -54,7 +56,7 @@ static bool get_latest_release() {
     } else {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
-    ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, strlen(local_response_buffer));
+    ESP_LOGI(TAG, "%.*s", strlen(local_response_buffer), local_response_buffer);
 
     esp_http_client_cleanup(client);
 
