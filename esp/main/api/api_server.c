@@ -13,7 +13,7 @@ static const char *TAG = "api server";
 #define SESSION_BLOCKS 10
 #define SESSION_BLOCKSIZE 2
 
-static httpd_handle_t server = NULL;
+static httpd_handle_t api_server = NULL;
 
 static void stop_webserver(httpd_handle_t server) {
 	httpd_stop(server);
@@ -51,17 +51,17 @@ static httpd_handle_t start_webserver() {
 }
 
 static void disconnect_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
-	if(server) {
+	if(api_server) {
 		ESP_LOGI(TAG, "Stopping webserver");
-		stop_webserver(server);
-		server = NULL;
+		stop_webserver(api_server);
+		api_server = NULL;
 	}
 }
 
 static void connect_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
-	if(server == NULL) {
+	if(api_server == NULL) {
 		ESP_LOGI(TAG, "Starting webserver");
-		server = start_webserver();
+		api_server = start_webserver();
 	}
 }
 
@@ -69,5 +69,5 @@ void start_api_server() {
 	ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &connect_handler, NULL, NULL));
 	ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, NULL, NULL));
 
-	server = start_webserver();
+	api_server = start_webserver();
 }

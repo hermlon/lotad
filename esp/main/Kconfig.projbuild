@@ -23,4 +23,11 @@ menu "Example Configuration"
 		default 0
 		help
 			Bypass authentication
+
+	config SNTP_TIME_SERVER
+        string "SNTP server name"
+        default "pool.ntp.org"
+        help
+            Hostname of the main SNTP server.
+
 endmenu
