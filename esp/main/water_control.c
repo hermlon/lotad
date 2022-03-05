@@ -1,6 +1,5 @@
 #include "water_control.h"
 
-#include "esp_timer.h"
 #include "esp_log.h"
 #include "nvs.h"
 #include "freertos/FreeRTOS.h"
@@ -25,13 +24,15 @@ static uint16_t current_capacity = 0;
 static watering_t watering_config[MAX_TIMERS];
 
 static void watering_task(void* params) {
-    TickType_t last_wake_time;
+    TickType_t last_wake_time = xTaskGetTickCount();
     const TickType_t wait_frequency = pdMS_TO_TICKS(60*1000);
     const TickType_t active_frequency = pdMS_TO_TICKS(2000);
     while(true) {
 
         if(water_ctl_get_active()) {
-            ESP_LOGI("water_task", "active");
+            time_t now;
+            time(&now);
+            ESP_LOGI("water_task", "active %ld", now);
         }
         xTaskDelayUntil(&last_wake_time, active_frequency);
     }
