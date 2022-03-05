@@ -4,7 +4,7 @@
 #include "mbedtls/md.h"
 #include "nvs.h"
 
-#include "watering_storage.h"
+#include "watering/watering_storage.h"
 
 static void password_hash(char* input, char result[33]) {
 	mbedtls_md_context_t ctx;

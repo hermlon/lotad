@@ -7,7 +7,7 @@
 #include "api_auth.h"
 #include "api_server.h"
 #include "models/password_model.h"
-#include "water_control.h"
+#include "watering/water_control.h"
 
 #define DEBUG_BYPASS_AUTH CONFIG_BYPASS_AUTH
 

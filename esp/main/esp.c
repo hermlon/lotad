@@ -5,11 +5,11 @@
 #include "esp_sntp.h"
 
 #include "wifi_station.h"
-#include "watering.h"
+#include "watering/watering.h"
 #include "api/api_server.h"
-#include "water_control.h"
-
-static const char* TAG = "esp main";
+#include "watering/water_control.h"
+#include "github_ota.h"
+#include "version.h"
 
 /* The examples use WiFi configuration that you can set via project configuration menu
 	 If you'd rather not, just change the below entries to strings with
@@ -19,6 +19,8 @@ static const char* TAG = "esp main";
 #define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
 #define EXAMPLE_ESP_MAXIMUM_RETRY  CONFIG_ESP_MAXIMUM_RETRY
 #define EXAMPLE_SNTP_TIME_SERVER   CONFIG_SNTP_TIME_SERVER
+
+#define TAG "esp main"
 
 void nvs_init() {
 	esp_err_t ret = nvs_flash_init();
@@ -30,11 +32,14 @@ void nvs_init() {
 }
 
 void app_main(void) {
+    ESP_LOGI(TAG, "Starting lotad version %s", VERSION_NAME);
 	nvs_init();
 	water_ctl_init();
 
 	if(wifi_init_sta(EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS, EXAMPLE_ESP_MAXIMUM_RETRY) == ESP_OK) {
 		start_api_server();
+
+        github_ota_check();
 
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
         sntp_setservername(0, EXAMPLE_SNTP_TIME_SERVER);
