@@ -7,15 +7,15 @@
 #define MAX_TIMERS 5
 
 typedef struct watering {
-  time_t time;
-  time_t offset;
-  int amount;
+	time_t time;
+	time_t offset;
+	int amount;
 } watering_t;
 
 struct water_config {
-  uint16_t capacity;
-  uint16_t savezone;
-  uint16_t throughput;
+	uint16_t capacity;
+	uint16_t savezone;
+	uint16_t throughput;
 };
 
 void water_ctl_init();

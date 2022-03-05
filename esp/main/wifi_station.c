@@ -25,27 +25,27 @@ static const char *TAG = "wifi station";
 static int s_retry_num = 0;
 
 static void event_handler(void* arg, esp_event_base_t event_base,
-                                int32_t event_id, void* event_data) {
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
-        esp_wifi_connect();
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        if (s_retry_num > 0) {
-            esp_wifi_connect();
-            s_retry_num--;
-            ESP_LOGI(TAG, "retry to connect to the AP");
-        } else {
-            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-        }
-        ESP_LOGI(TAG,"connect to the AP fail");
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-    }
+																int32_t event_id, void* event_data) {
+		if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+				esp_wifi_connect();
+		} else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+				if (s_retry_num > 0) {
+						esp_wifi_connect();
+						s_retry_num--;
+						ESP_LOGI(TAG, "retry to connect to the AP");
+				} else {
+						xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+				}
+				ESP_LOGI(TAG,"connect to the AP fail");
+		} else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+				ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+				ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+				xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+		}
 }
 
 esp_err_t wifi_init_sta(char wifi_ssid[32], char wifi_pass[64], int retries) {
-  esp_err_t result;
+	esp_err_t result;
 	s_retry_num = retries;
 	s_wifi_event_group = xEventGroupCreate();
 
@@ -83,8 +83,8 @@ esp_err_t wifi_init_sta(char wifi_ssid[32], char wifi_pass[64], int retries) {
 			},
 		},
 	};
-  memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid));
-  memcpy(wifi_config.sta.password, wifi_pass, sizeof(wifi_config.sta.password));
+	memcpy(wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid));
+	memcpy(wifi_config.sta.password, wifi_pass, sizeof(wifi_config.sta.password));
 
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
 	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
@@ -105,19 +105,19 @@ esp_err_t wifi_init_sta(char wifi_ssid[32], char wifi_pass[64], int retries) {
 	if (bits & WIFI_CONNECTED_BIT) {
 		ESP_LOGI(TAG, "connected to ap SSID:%s",
 				wifi_ssid);
-        result = ESP_OK;
+				result = ESP_OK;
 	} else if (bits & WIFI_FAIL_BIT) {
 		ESP_LOGI(TAG, "Failed to connect to SSID:%s",
 				wifi_ssid);
-        result = ESP_FAIL;
+				result = ESP_FAIL;
 	} else {
 		ESP_LOGE(TAG, "UNEXPECTED EVENT");
-    result = ESP_FAIL;
+		result = ESP_FAIL;
 	}
 
 	/* The event will not be processed after unregister */
 	ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
 	ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
 	vEventGroupDelete(s_wifi_event_group);
-  return result;
+	return result;
 }
