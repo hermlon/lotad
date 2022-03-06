@@ -3,6 +3,9 @@
 #include "nvs_flash.h"
 #include "esp_log.h"
 #include "esp_sntp.h"
+#include "protocomm.h"
+#include "protocomm_ble.h"
+#include <protocomm_security0.h>
 
 #include "wifi_station.h"
 #include "watering/watering.h"
