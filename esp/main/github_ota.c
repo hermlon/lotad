@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
+#include "esp_https_ota.h"
 #include "cJSON.h"
 
 #define TAG "github ota"
@@ -73,7 +74,6 @@ static bool get_latest_release(char* download_url) {
                     if(cJSON_IsArray(assets)) {
                         cJSON* asset = NULL;
                         cJSON_ArrayForEach(asset, assets) {
-                            ESP_LOGD(TAG, "foreach");
                             cJSON* name = cJSON_GetObjectItemCaseSensitive(asset, "name");
                             if(cJSON_IsString(name) && (name->valuestring) != NULL) {
                                 if(strcmp(name->valuestring, "esp.bin") == 0) {
@@ -87,7 +87,9 @@ static bool get_latest_release(char* download_url) {
                                 }
                             }
                         }
-                        ESP_LOGD(TAG, "end foreach");
+                        if(!new_url) {
+                            ESP_LOGW(TAG, "Newer release doesn't contain asset called esp.bin");
+                        }
                     }
                 } else {
                     ESP_LOGI(TAG, "No new version found: current: %s, new: %s", VERSION_NAME, version->valuestring);
@@ -110,7 +112,20 @@ static bool get_latest_release(char* download_url) {
 static void ota_task(void* params) {
     char url[URL_BUF_SIZE];
     if(get_latest_release(url)) {
-        ESP_LOGI(TAG, "Download url: %s", url);
+        esp_http_client_config_t config = {
+                /* github usercontent urls are around 500 chars long */
+                .buffer_size_tx = 1024,
+                .url = url,
+                .cert_pem = github_root_cert_start
+        };
+
+        esp_err_t ret = esp_https_ota(&config);
+        if(ret == ESP_OK) {
+            ESP_LOGI(TAG, "Update successful, restarting...");
+            esp_restart();
+        } else {
+            ESP_LOGE(TAG, "Update failed.");
+        }
     }
 
     vTaskDelete(NULL);
