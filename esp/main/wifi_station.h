@@ -1,5 +1,5 @@
-#ifndef WIFI_STATION_H
-#define  WIFI_STATION_H
+#ifndef LOTAD_WIFI_STATION_H
+#define  LOTAD_WIFI_STATION_H
 
 #include <stdint.h>
 #include "lwip/err.h"

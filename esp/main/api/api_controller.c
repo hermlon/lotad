@@ -1,7 +1,6 @@
 #include "api_controller.h"
 
 #include <esp_log.h>
-#include <sys/param.h>
 #include "cJSON.h"
 
 #include "api_auth.h"
